@@ -39,7 +39,7 @@ func (m *MONITOR) StartHTTPModule(port int) error {
 	r := mux.NewRouter()
 	r.HandleFunc("/", Welcome) //设置访问的路由
 
-	r.HandleFunc("/monitor/{metric}", m.HandleMonitor).Methods("GET") //设置访问的路由
+	r.HandleFunc("/current/{metric}", m.HandleMonitor).Methods("GET") //设置访问的路由
 
 	r.HandleFunc("/history/{HVersion}/{metric}", m.HandleHistory).Methods("GET") //设置访问的路由
 

@@ -6,9 +6,9 @@ import (
 
 var M *MONITOR
 
-// curl http://127.0.0.1:9999/monitor/monitor.TRecordFuncCount
-// curl http://127.0.0.1:9999/monitor/monitor.TRecordFuncTimeAvg
-// curl http://127.0.0.1:9999/monitor/monitor.TRecordFuncTimes
+// curl http://127.0.0.1:9999/current/monitor.TRecordFuncCount
+// curl http://127.0.0.1:9999/current/monitor.TRecordFuncTimeAvg
+// curl http://127.0.0.1:9999/currentweb.go/monitor.TRecordFuncTimes
 // curl http://127.0.0.1:9999/history/444/monitor.TRecordFuncCount
 // curl http://127.0.0.1:9999/history/444/monitor.TRecordFuncTimeAvg
 // curl http://127.0.0.1:9999/history/444/monitor.TRecordFuncTimes
