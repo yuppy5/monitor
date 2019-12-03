@@ -2,8 +2,10 @@ package monitor
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 // 落地为 Text 的 writer
@@ -74,80 +76,61 @@ func (j *TextWriter) DoWithRecover(nameMap *MetricNameMap, omd *OneMinStorage) e
 
 	// 关闭文件 重命名
 	tmpfile.Close()
-	err = os.Rename("/tmp/"+tmpfile.Name(), j.Conf.DownPath)
+	err = os.Rename(tmpfile.Name(), j.Conf.DownPath)
 	if err != nil {
+		// Logger.Printf("TextWriter Write Rename Temp File Error %s", err)
+		fmt.Printf("TextWriter Write Rename Temp File Error %s", err)
 		return err
 	}
 
 	return nil
 }
 
-// 普通的监控数据写入到临时文件
-func writeTextBasicMetrics(f *os.File, data map[string]float64) error {
-	var buf bytes.Buffer
-
-	for name, value := range data {
-		buf.Reset()
-		buf.WriteString(name)
-		buf.WriteByte(Equal)
-		buf.WriteString(strconv.FormatFloat(value, 'f', 5, 65))
-		buf.WriteByte(NewLine)
-		_, err := f.Write(buf.Bytes())
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 // 特殊监控值写入到临时文件中
-func writeTextSpecMetrics(f *os.File, nameMap map[int]*MetricName, data map[int]*SpecValue) error {
-	var buf bytes.Buffer
+func writeTextSpecMetrics(f *os.File, nameMap map[int]*MetricName, data map[int]*SpecValue) (err error) {
+	var buf strings.Builder
 
 	for id, SPV := range data {
-		buf.Reset()
 		_name := nameMap[id].Name
-		_tags := nameMap[id].GetSortedTags()
+		_tags := GetSortedTagsString(nameMap[id].GetSortedTags())
+		values := getValueString(nameMap[id].Type, SPV)
+		suffix := SuffixMap[nameMap[id].Type]
 
-		switch nameMap[id].Type {
-		case BaseMetric:
-			writeTextstringSlice(f, buf, &_name, _tags, CountSuffix, getValueString(BaseMetric, SPV))
-		case SumMetric:
-			writeTextstringSlice(f, buf, &_name, _tags, CountSuffix, getValueString(SumMetric, SPV))
-		case AvgMetric:
-			writeTextstringSlice(f, buf, &_name, _tags, CountSuffix, getValueString(AvgMetric, SPV))
-		case CountMetric:
-			writeTextstringSlice(f, buf, &_name, _tags, CountSuffix, getValueString(CountMetric, SPV))
-		case CountSumMetric:
-			writeTextstringSlice(f, buf, &_name, _tags, CountSuffix, getValueString(CountSumMetric, SPV))
-		case CountAvgMetric:
-			writeTextstringSlice(f, buf, &_name, _tags, CountSuffix, getValueString(CountAvgMetric, SPV))
-		case QuantileMetric:
-			writeTextstringSlice(f, buf, &_name, _tags, CountSuffix, getValueString(QuantileMetric, SPV))
+		for i, value := range values {
+			fmt.Fprintf(&buf, "%s%s%s=%s\n", _name, suffix[i], _tags, value)
 		}
 	}
-	return nil
+
+	_, err = f.WriteString(buf.String())
+	return
 }
 
-// writeTextstringSlice 将具有多个后缀和多个value的数据写入文件
-func writeTextstringSlice(f *os.File, buf bytes.Buffer, baseName *string, _tags [][]byte, suffixes []string, value []string) (count int, err error) {
-	for i, v := range value {
-		newName := *baseName + suffixes[i]
-		writeTextMetric(buf, &newName, _tags, v)
+// GetSortedTagsString 格式化tag 字符串并返回
+func GetSortedTagsString(SortedTags [][]byte) (ret string) {
+	if len(SortedTags) == 0 {
+		return
 	}
-	return f.Write(buf.Bytes())
+
+	var buf bytes.Buffer
+
+	for _, tag := range SortedTags {
+		buf.WriteByte(Semicolon)
+		buf.Write(tag)
+	}
+
+	ret = buf.String()
+
+	return
 }
 
-// writeMetric 写入只有一个值的数据到value
-func writeTextMetric(buf bytes.Buffer, _name *string, _tags [][]byte, value string) {
-	buf.WriteString(*_name)
-	if len(_tags) > 0 {
-		for _, kv := range _tags {
-			buf.WriteByte(Semicolon)
-			buf.Write(kv)
-		}
+// 普通的监控数据写入到临时文件
+func writeTextBasicMetrics(f *os.File, data map[string]float64) (err error) {
+	var buf strings.Builder
+
+	for name, value := range data {
+		fmt.Fprintf(&buf, "%s=%f\n", name, value)
 	}
-	buf.WriteByte(Equal)
-	buf.WriteString(value)
-	buf.WriteByte(NewLine)
+
+	_, err = f.WriteString(buf.String())
+	return
 }
