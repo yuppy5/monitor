@@ -65,6 +65,17 @@ var (
 
 	// QuantileSuffix 分位数后缀
 	QuantileSuffix = []string{"_MinP50", "_MinP90", "_MinP95", "_MinP99"}
+
+	// SuffixMap 结尾映射
+	SuffixMap = map[int][]string{
+		BaseMetric:     BaseSuffix,
+		SumMetric:      SumSuffix,
+		AvgMetric:      AvgSuffix,
+		CountMetric:    CountSuffix,
+		CountSumMetric: CountSumSuffix,
+		CountAvgMetric: CountAvgSuffix,
+		QuantileMetric: QuantileSuffix,
+	}
 )
 
 // RegisterWriterName 存储已注册的 Writer Name
