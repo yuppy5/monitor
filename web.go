@@ -23,7 +23,7 @@ var (
 func getHostName() string {
 	host, err := os.Hostname()
 	if err != nil {
-		return "Unknown!"
+		return "_UnknownHostName"
 	}
 	return host
 }
