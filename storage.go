@@ -6,7 +6,7 @@ import (
 
 const (
 	// SelfMonitorKey 自身状态监控的 KEY
-	SelfMonitorKey = "__WYJ_RecordMonitorSpecKeyTemplateException"
+	SelfMonitorKey = "__RecordMonitorSpecKeyTemplateException"
 )
 
 // 监控数据存储核心及方法
