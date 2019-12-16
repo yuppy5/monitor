@@ -16,6 +16,10 @@ type Config struct {
 
 	// writers 配置
 	Writers []*WriterConfig
+
+	// WebPath 采用 web 方式访问的时候, 读取的文件的 path
+	// 默认为 text_writer 写出来的文本 ./go-monitor.txt
+	WebPath string
 }
 
 // NewConfig 返回一个 Config实例,及一些默认的配置
@@ -25,6 +29,7 @@ func NewConfig() *Config {
 		Revisions: 3,
 		Port:      9999,
 		Writers:   make([]*WriterConfig, 0),
+		WebPath:   "./go-monitor.txt",
 	}
 }
 

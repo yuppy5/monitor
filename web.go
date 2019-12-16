@@ -39,6 +39,8 @@ func (m *MONITOR) StartHTTPModule(port int) error {
 	r := mux.NewRouter()
 	r.HandleFunc("/", Welcome) //设置访问的路由
 
+	r.HandleFunc("/last", m.HandleCurrent).Methods("GET") // 设置访问的路由
+
 	r.HandleFunc("/current/{metric}", m.HandleMonitor).Methods("GET") //设置访问的路由
 
 	r.HandleFunc("/history/{HVersion}/{metric}", m.HandleHistory).Methods("GET") //设置访问的路由
@@ -143,4 +145,13 @@ func (m *MONITOR) HandleHistory(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, fmt.Sprintf("Key: %s\n%s%s", k, name, v))
 		}
 	}
+}
+
+// HandleCurrent 获取最后一次落地的文件, 文件名根据配置 m.Conf.WebPath 获得
+// 如果该文件通过其它 writer 周期性获得, 则该文件一般为最后一次更新后落地的文件
+// 一般多用于监控管理端周期性获取、存储
+func (m *MONITOR) HandleCurrent(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Connection", "close")
+	http.ServeFile(w, r, m.Conf.WebPath)
+	Logger.Printf("Get Current file [%s]", m.Conf.WebPath)
 }
