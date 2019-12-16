@@ -71,6 +71,16 @@ func (c *Config) ValidateHTTPPort(port int) error {
 	}
 }
 
+// ValidateWebPath 写入通过 web 的 last 方法访问时候文件的路径
+// 当给的 path 为空时, c.WebPath 不做更改
+func (c *Config) ValidateWebPath(path string) error {
+	if path == "" {
+		return nil
+	}
+	c.WebPath = path
+	return nil
+}
+
 // AddWriter 添加 writer 配置
 func (c *Config) AddWriter(wc *WriterConfig) {
 	c.Writers = append(c.Writers, wc)
